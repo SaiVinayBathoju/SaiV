@@ -1,6 +1,6 @@
 # SaiV — Evaluation Documentation
 
-This document supports project evaluation by describing how SaiV meets each criterion. Use it alongside the codebase and [README.md](README.md).
+This document supports project evaluation by describing how SaiV meets each criterion.
 
 ---
 
@@ -13,7 +13,7 @@ This document supports project evaluation by describing how SaiV meets each crit
 - **Quizzes**: 5–10 multiple-choice questions with options and explanations.
 - **RAG Chat**: Streaming Q&A grounded in the uploaded material via retrieval-augmented generation.
 
-**Tech stack**: Next.js 14 (App Router) + TypeScript + TailwindCSS (frontend); FastAPI + Python (backend); Supabase (PostgreSQL + pgvector); OpenAI and/or Google Gemini for LLM and embeddings.
+**Tech stack**: Next.js 14 (App Router) + TypeScript + TailwindCSS (frontend); FastAPI + Python (backend); Supabase (PostgreSQL + pgvector); OpenAI and Google Gemini for LLM and embeddings.
 
 ---
 
