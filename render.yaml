@@ -1,0 +1,11 @@
+# Render Blueprint: backend only. Frontend deploy on Vercel.
+# If you already have a Dashboard service, set Build Command to:
+#   pip install --no-cache-dir -r requirements.txt
+# and clear build cache before redeploying.
+services:
+  - type: web
+    runtime: python
+    name: saiv-backend
+    rootDir: backend
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT

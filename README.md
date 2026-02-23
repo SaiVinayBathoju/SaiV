@@ -94,7 +94,9 @@ Open [http://localhost:3000](http://localhost:3000).
 |----------|----------|-------------|
 | `SUPABASE_URL` | Yes | Supabase project URL |
 | `SUPABASE_SERVICE_KEY` | Yes | Supabase service role key |
-| `OPENAI_API_KEY` | Yes | OpenAI API key |
+| `OPENAI_API_KEY` | Yes* | OpenAI API key (*or use `GEMINI_API_KEY` for free tier) |
+| `GEMINI_API_KEY` | No | Google Gemini (free at aistudio.google.com); used for chat/flashcards/quiz and as fallback |
+| `EMBEDDING_FALLBACK_TO_LOCAL` | No | Set to `false` on Render/cloud; local fallback needs `fastembed`, which requires Rust to build |
 | `NEXT_PUBLIC_API_URL` | No | Backend URL (default: proxied via Next.js) |
 
 ## API Endpoints
@@ -136,6 +138,16 @@ SaiV/
 3. **Output Directory:** In **Project Settings → Build & Development Settings**, set **Output Directory** to `.next` (or leave it **empty**). If it is set to `public`, you will get "No Output Directory named 'public' found" — clear it or change it to `.next`.
 4. Add environment variables (e.g. `NEXT_PUBLIC_API_URL` if your backend is hosted elsewhere).
 5. Deploy. The backend (FastAPI) must be deployed separately (e.g. Railway, Render, or a VPS).
+
+## Deploying backend to Render
+
+1. Create a **Web Service**, connect the repo, set **Root Directory** to `backend`.
+2. **Build Command:** `pip install --no-cache-dir -r requirements.txt` (avoids cached deps that can pull in `py-rust-stemmers`).
+3. **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4. Set env vars (Supabase, `OPENAI_API_KEY` and/or `GEMINI_API_KEY`, and `EMBEDDING_FALLBACK_TO_LOCAL=false`).
+5. If you still see `py-rust-stemmers` build errors: **Settings → Clear build cache & deploy**, then redeploy.
+
+Alternatively, use the repo-root `render.yaml` Blueprint (it points to `backend` and uses the same build command).
 
 ## Error Handling
 
