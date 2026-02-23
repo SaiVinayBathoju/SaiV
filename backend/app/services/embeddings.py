@@ -10,8 +10,8 @@ from app.utils.logging_config import get_logger
 
 logger = get_logger("embeddings")
 
-# Gemini embedding-001 output dimension (we pad to target_dim for DB)
-GEMINI_EMBED_DIM = 768
+# gemini-embedding-001 default is 3072; we request 1536 via output_dimensionality or pad to target_dim
+GEMINI_EMBED_DIM = 3072
 # Local model output dimension (fastembed BAAI/bge-small-en-v1.5)
 LOCAL_EMBED_DIM = 384
 
@@ -37,17 +37,17 @@ def _embed_gemini_sync(texts: List[str], target_dim: int) -> List[List[float]]:
     settings = get_settings()
     genai.configure(api_key=settings.gemini_api_key)
     model = settings.gemini_embedding_model
-    # RETRIEVAL_DOCUMENT for stored chunks; batch in sizes the API accepts
+    # Batch in sizes the API accepts; request 1536 dims when supported (gemini-embedding-001)
     batch_size = 100
     all_embeddings: List[List[float]] = []
+    kwargs = {"model": model, "content": None, "task_type": "retrieval_document"}
+    if target_dim in (768, 1536, 3072):
+        kwargs["output_dimensionality"] = target_dim
     for i in range(0, len(texts), batch_size):
         batch = texts[i : i + batch_size]
-        result = genai_embedding.embed_content(
-            model=model,
-            content=batch,
-            task_type="retrieval_document",
-        )
-        # result["embedding"] is list of lists for batch input
+        kwargs["content"] = batch
+        result = genai_embedding.embed_content(**kwargs)
+        # result["embedding"] is list of lists for batch input, or single list for one text
         batch_emb = result.get("embedding", [])
         if batch_emb and isinstance(batch_emb[0], (int, float)):
             batch_emb = [batch_emb]
