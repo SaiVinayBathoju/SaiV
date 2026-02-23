@@ -1,24 +1,69 @@
-"""Embedding generation service with OpenAI and local (fastembed) fallback."""
+"""Embedding generation service: OpenAI, Gemini (free), and optional local (fastembed) fallback."""
 
 import asyncio
 import math
 import traceback
 from typing import List
 
-from openai import AsyncOpenAI
-
 from app.config import get_settings
 from app.utils.logging_config import get_logger
 
 logger = get_logger("embeddings")
 
+# Gemini embedding-001 output dimension (we pad to target_dim for DB)
+GEMINI_EMBED_DIM = 768
 # Local model output dimension (fastembed BAAI/bge-small-en-v1.5)
 LOCAL_EMBED_DIM = 384
 
 
+def _pad_and_normalize(vectors: List[List[float]], target_dim: int) -> List[List[float]]:
+    """Pad or truncate vectors to target_dim and L2-normalize."""
+    result: List[List[float]] = []
+    for arr in vectors:
+        if len(arr) < target_dim:
+            arr = arr + [0.0] * (target_dim - len(arr))
+        else:
+            arr = arr[:target_dim]
+        norm = math.sqrt(sum(x * x for x in arr)) or 1.0
+        result.append([x / norm for x in arr])
+    return result
+
+
+def _embed_gemini_sync(texts: List[str], target_dim: int) -> List[List[float]]:
+    """Generate embeddings using Gemini (sync). Pads to target_dim and L2-normalizes."""
+    import google.generativeai as genai
+    from google.generativeai import embedding as genai_embedding
+
+    settings = get_settings()
+    genai.configure(api_key=settings.gemini_api_key)
+    model = settings.gemini_embedding_model
+    # RETRIEVAL_DOCUMENT for stored chunks; batch in sizes the API accepts
+    batch_size = 100
+    all_embeddings: List[List[float]] = []
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i : i + batch_size]
+        result = genai_embedding.embed_content(
+            model=model,
+            content=batch,
+            task_type="retrieval_document",
+        )
+        # result["embedding"] is list of lists for batch input
+        batch_emb = result.get("embedding", [])
+        if batch_emb and isinstance(batch_emb[0], (int, float)):
+            batch_emb = [batch_emb]
+        all_embeddings.extend(batch_emb)
+    return _pad_and_normalize(all_embeddings, target_dim)
+
+
 def _embed_local_sync(texts: List[str], target_dim: int) -> List[List[float]]:
     """Generate embeddings using fastembed (sync). Pads to target_dim and L2-normalizes."""
-    from fastembed import TextEmbedding
+    try:
+        from fastembed import TextEmbedding
+    except ImportError:
+        raise ValueError(
+            "Local embedding fallback requires 'fastembed'. Install with: pip install fastembed. "
+            "Or set OPENAI_API_KEY / use Gemini and disable EMBEDDING_FALLBACK_TO_LOCAL on hosted deployments."
+        ) from None
 
     model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5", max_length=512)
     # embed returns an iterable of ndarrays
@@ -37,29 +82,23 @@ def _embed_local_sync(texts: List[str], target_dim: int) -> List[List[float]]:
     return result
 
 
-async def _generate_embeddings_openai(texts: List[str]) -> List[List[float]]:
-    """Call OpenAI embeddings API. Raises on failure."""
-    settings = get_settings()
-    client = AsyncOpenAI(api_key=settings.openai_api_key)
-    batch_size = 100
-    all_embeddings: List[List[float]] = []
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i : i + batch_size]
-        response = await client.embeddings.create(
-            model=settings.embedding_model,
-            input=batch,
-            dimensions=settings.embedding_dimensions,
-        )
-        batch_embeddings = [item.embedding for item in response.data]
-        all_embeddings.extend(batch_embeddings)
-    return all_embeddings
+def _gemini_available() -> bool:
+    return bool(get_settings().gemini_api_key)
+
+
+async def _generate_embeddings_gemini(texts: List[str], target_dim: int) -> List[List[float]]:
+    """Run sync Gemini embedding in executor."""
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(
+        None,
+        lambda: _embed_gemini_sync(texts, target_dim),
+    )
 
 
 async def generate_embeddings(texts: List[str]) -> List[List[float]]:
     """
     Generate embeddings for a list of text chunks.
-    Uses OpenAI when available; on quota/rate-limit or missing key, falls back to local
-    (fastembed) if embedding_fallback_to_local is True.
+    Order: OpenAI (if key set) -> on failure or no key, Gemini (if key set) -> else local fastembed if enabled.
     """
     if not texts:
         return []
@@ -67,40 +106,51 @@ async def generate_embeddings(texts: List[str]) -> List[List[float]]:
     settings = get_settings()
     target_dim = settings.embedding_dimensions
 
-    # Prefer OpenAI when key is set (no proxy or custom httpx)
+    # 1) Try OpenAI when key is set
     if settings.openai_api_key:
         try:
-            return await _generate_embeddings_openai(texts)
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=settings.openai_api_key)
+            batch_size = 100
+            all_embeddings: List[List[float]] = []
+            for i in range(0, len(texts), batch_size):
+                batch = texts[i : i + batch_size]
+                response = await client.embeddings.create(
+                    model=settings.embedding_model,
+                    input=batch,
+                    dimensions=settings.embedding_dimensions,
+                )
+                all_embeddings.extend([item.embedding for item in response.data])
+            return all_embeddings
         except Exception as e:
             traceback.print_exc()
             err_str = str(e).lower()
-            is_quota_or_rate = (
-                "429" in err_str
-                or "insufficient_quota" in err_str
-                or "rate limit" in err_str
-            )
-            if is_quota_or_rate:
-                logger.warning(
-                    "OpenAI embedding quota/rate limit hit, falling back to local embeddings",
-                    error=str(e),
-                )
+            is_invalid_key = "401" in err_str or "invalid_api_key" in err_str or "incorrect api key" in err_str
+            if is_invalid_key:
+                logger.warning("OpenAI API key invalid or rejected; trying Gemini for embeddings", error=str(e))
             else:
-                logger.warning(
-                    "OpenAI embedding failed, falling back to local embeddings",
-                    error=str(e),
-                )
+                logger.warning("OpenAI embedding failed; trying Gemini for embeddings", error=str(e))
+            # Fall through to try Gemini or local
+    else:
+        logger.info("No OpenAI API key; using Gemini or local for embeddings")
+
+    # 2) Try Gemini (free tier) when key is set
+    if _gemini_available():
+        try:
+            return await _generate_embeddings_gemini(texts, target_dim)
+        except Exception as e:
+            traceback.print_exc()
+            logger.warning("Gemini embedding failed", error=str(e))
             if not settings.embedding_fallback_to_local:
                 raise ValueError(f"Embedding generation failed: {e}") from e
-            # Fall through to local
     else:
         if not settings.embedding_fallback_to_local:
             raise ValueError(
-                "OpenAI API key not configured and local embedding fallback is disabled. "
-                "Set OPENAI_API_KEY or EMBEDDING_FALLBACK_TO_LOCAL=true."
-            )
-        logger.info("No OpenAI API key; using local embeddings")
+                "No embedding provider available. Set OPENAI_API_KEY, or GEMINI_API_KEY (free at https://aistudio.google.com/apikey), "
+                "or enable EMBEDDING_FALLBACK_TO_LOCAL and install fastembed."
+            ) from None
 
-    # Local fallback: run sync fastembed in thread pool, pad and normalize to target_dim
+    # 3) Local fallback (fastembed) if enabled
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         None,

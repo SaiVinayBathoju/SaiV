@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     # Google Gemini - free tier (get key at https://aistudio.google.com/apikey)
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
+    gemini_embedding_model: str = "models/embedding-001"
 
     # AI provider for chat/flashcards/quiz: "openai" | "gemini" | "auto" (auto = try OpenAI, then Gemini)
     ai_provider: str = "auto"
