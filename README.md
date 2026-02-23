@@ -142,12 +142,12 @@ SaiV/
 ## Deploying backend to Render
 
 1. Create a **Web Service**, connect the repo, set **Root Directory** to `backend`.
-2. **Build Command:** `pip install --no-cache-dir -r requirements.txt` (avoids cached deps that can pull in `py-rust-stemmers`).
-3. **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-4. Set env vars (Supabase, `OPENAI_API_KEY` and/or `GEMINI_API_KEY`, and `EMBEDDING_FALLBACK_TO_LOCAL=false`).
-5. If you still see `py-rust-stemmers` build errors: **Settings → Clear build cache & deploy**, then redeploy.
+2. **Build Command:** `pip install --no-cache-dir -r requirements.txt`
+3. **Start Command:** `python run.py` (uses `backend/run.py` so the app loads correctly and logs any startup error).
+4. Set env vars (Supabase, `OPENAI_API_KEY` and/or `GEMINI_API_KEY`, `EMBEDDING_FALLBACK_TO_LOCAL=false`).
+5. If you see `py-rust-stemmers` build errors: **Settings → Clear build cache & deploy**.
 
-Alternatively, use the repo-root `render.yaml` Blueprint (it points to `backend` and uses the same build command).
+Alternatively, use the repo-root `render.yaml` Blueprint (same build/start commands).
 
 ## Error Handling
 
