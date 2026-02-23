@@ -2,8 +2,6 @@
 
 SaiV is an AI-powered learning assistant that turns YouTube videos and PDFs into flashcards, quizzes, and a context-aware chat. It uses **Retrieval-Augmented Generation (RAG)** to provide grounded, accurate answers from your learning material.
 
-> **For evaluators:** See **[EVALUATION.md](EVALUATION.md)** for documentation aligned to the evaluation criteria (Architecture, AI Integration, RAG, Flashcards & Quiz, UI/UX, Error Handling, Documentation).
-
 ## Features
 
 - **Content Processing**: Paste a YouTube URL or upload a PDF
