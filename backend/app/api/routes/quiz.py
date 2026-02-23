@@ -35,25 +35,24 @@ async def generate_quiz_endpoint(body: GenerateQuizBody):
         raise HTTPException(status_code=400, detail=str(e))
 
     quiz = []
+    valid_letters = ("A", "B", "C", "D")
     for item in items[:10]:
-        q = item.get("question", "").strip()
-        opts = item.get("options", [])
-        correct = str(item.get("correct_answer", "A")).upper()
-        exp = item.get("explanation", "").strip()
-        if q and len(opts) >= 2:
-            quiz.append(
-                QuizItem(
-                    question=q,
-                    options=[str(o) for o in opts],
-                    correct_answer=correct,
-                    explanation=exp,
-                )
+        q = (item.get("question") or "").strip()
+        opts_raw = item.get("options") or []
+        opts = [str(o).strip() for o in opts_raw] if isinstance(opts_raw, list) else []
+        if not q or len(opts) < 2:
+            continue
+        correct = str(item.get("correct_answer") or "A").strip().upper()
+        if correct not in valid_letters:
+            correct = "A"
+        exp = (item.get("explanation") or "").strip()
+        quiz.append(
+            QuizItem(
+                question=q,
+                options=opts,
+                correct_answer=correct,
+                explanation=exp,
             )
-
-    if not quiz:
-        raise HTTPException(
-            status_code=500,
-            detail="Could not generate quiz. Please try again.",
         )
 
     return ApiResponse(

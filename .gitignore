@@ -1,17 +1,18 @@
-# frontend
-frontend/node_modules
-frontend/.next
-frontend/dist
-frontend/build
-
-# backend
-backend/venv
-backend/__pycache__
-*.pyc
-
 # env files
 .env
-*.env
+backend/.env
+frontend/.env*
+
+# python
+backend/venv/
+__pycache__/
+*.pyc
+
+# node
+frontend/node_modules/
+.next/
+dist/
+build/
 
 # OS
 .DS_Store

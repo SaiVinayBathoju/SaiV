@@ -1,7 +1,7 @@
 # SaiV Backend - Production Dependencies
-fastapi==0.109.2
-uvicorn[standard]==0.27.1
-python-multipart==0.0.9
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+pydantic==2.7.4
 
 # Supabase: use >=2.10 so gotrue works with httpx 0.26+ (no "proxy" init error)
 supabase>=2.10.0

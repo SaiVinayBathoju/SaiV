@@ -978,25 +978,9 @@ video {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
 }
-.py-6 {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
-}
 .py-8 {
   padding-top: 2rem;
   padding-bottom: 2rem;
-}
-.pb-\[max\(1\.5rem\2c env\(safe-area-inset-bottom\)\)\] {
-  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
-}
-.pl-\[max\(0\.75rem\2c env\(safe-area-inset-left\)\)\] {
-  padding-left: max(0.75rem, env(safe-area-inset-left));
-}
-.pr-\[max\(0\.75rem\2c env\(safe-area-inset-right\)\)\] {
-  padding-right: max(0.75rem, env(safe-area-inset-right));
-}
-.pt-\[max\(1\.5rem\2c env\(safe-area-inset-top\)\)\] {
-  padding-top: max(1.5rem, env(safe-area-inset-top));
 }
 .pb-\[calc\(1\.5rem\+env\(safe-area-inset-bottom\)\)\] {
   padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
@@ -1476,11 +1460,6 @@ body {
     padding-bottom: 0.375rem;
   }
 
-  .sm\:py-10 {
-    padding-top: 2.5rem;
-    padding-bottom: 2.5rem;
-  }
-
   .sm\:py-12 {
     padding-top: 3rem;
     padding-bottom: 3rem;
@@ -1570,16 +1549,6 @@ body {
 
   .md\:p-8 {
     padding: 2rem;
-  }
-
-  .md\:px-8 {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-
-  .md\:py-12 {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
   }
 
   .md\:py-20 {

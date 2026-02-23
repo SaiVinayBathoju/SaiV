@@ -129,6 +129,14 @@ SaiV/
 └── README.md
 ```
 
+## Deploying to Vercel (frontend only)
+
+1. In the [Vercel Dashboard](https://vercel.com), import your repo and create a project.
+2. **Root Directory:** In **Project Settings → General**, set **Root Directory** to `frontend`. (If you leave it blank, the root `vercel.json` will use `outputDirectory: "frontend/.next"` so the build can succeed.)
+3. **Output Directory:** In **Project Settings → Build & Development Settings**, set **Output Directory** to `.next` (or leave it **empty**). If it is set to `public`, you will get "No Output Directory named 'public' found" — clear it or change it to `.next`.
+4. Add environment variables (e.g. `NEXT_PUBLIC_API_URL` if your backend is hosted elsewhere).
+5. Deploy. The backend (FastAPI) must be deployed separately (e.g. Railway, Render, or a VPS).
+
 ## Error Handling
 
 - **Invalid YouTube URL**: Returns a clear validation message.

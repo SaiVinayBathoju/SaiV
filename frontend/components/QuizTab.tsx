@@ -26,11 +26,12 @@ export default function QuizTab({ documentId, onError }: QuizTabProps) {
     }
     setLoading(true);
     setQuiz([]);
+    onError(""); // clear any previous error before fetching
     import("@/lib/api").then(({ generateQuiz }) => {
       generateQuiz(documentId).then((res) => {
         setLoading(false);
         if (res.success && res.data) {
-          setQuiz(res.data.quiz);
+          setQuiz(res.data.quiz || []);
           setCurrentIndex(0);
           setSelected(null);
           setShowResult(false);

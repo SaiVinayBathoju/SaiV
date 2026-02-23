@@ -121,20 +121,25 @@ async def _generate_quiz_gemini(content: str, document_id: str) -> List[dict]:
     max_chars = 12000
     truncated = content[:max_chars] + ("..." if len(content) > max_chars else "")
     system = """You are an expert quiz designer. Create multiple-choice questions from the given material.
-Rules: 5-10 MCQs, 4 options each, correctAnswer one of A/B/C/D, include brief explanation.
-Return ONLY a raw JSON array with no markdown, no code fences, no extra text: [{"question": "...", "options": ["A","B","C","D"], "correctAnswer": "B", "explanation": "..."}, ...]"""
+Rules: 5-10 MCQs, 4 options each, correctAnswer must be exactly A, B, C, or D, include brief explanation.
+Return ONLY a raw JSON array, no markdown: [{"question": "...", "options": ["option1", "option2", "option3", "option4"], "correctAnswer": "B", "explanation": "..."}, ...]"""
     user = f"Create MCQ quiz from this content:\n\n{truncated}\n\nReturn a JSON array of quiz questions."
     loop = asyncio.get_event_loop()
-    text = await loop.run_in_executor(
-        None,
-        lambda: _gemini_generate_sync(user, system, max_tokens=2500),
-    )
-    items = _parse_json_array(text or "[]", "quiz")
-    for item in items:
-        if "correctAnswer" in item:
-            item["correct_answer"] = str(item.pop("correctAnswer", "")).strip().upper()
-        item.setdefault("options", [])
-        item.setdefault("explanation", "")
+
+    def _run_once() -> List[dict]:
+        text = _gemini_generate_sync(user, system, max_tokens=2500)
+        items = _parse_json_array(text or "[]", "quiz")
+        for item in items:
+            if "correctAnswer" in item:
+                item["correct_answer"] = str(item.pop("correctAnswer", "")).strip().upper()
+            item.setdefault("options", [])
+            item.setdefault("explanation", "")
+        return items
+
+    items = await loop.run_in_executor(None, _run_once)
+    if not items:
+        logger.info("Quiz parse returned empty, retrying once")
+        items = await loop.run_in_executor(None, _run_once)
     return items
 
 
