@@ -1,36 +1,35 @@
 # SaiV Backend - Production Dependencies
-fastapi==0.111.0
-uvicorn[standard]==0.30.1
-pydantic==2.7.4
+# Core (single pydantic version to avoid ResolutionImpossible)
+fastapi>=0.111.0,<0.116.0
+uvicorn[standard]>=0.30.0,<0.32.0
+pydantic>=2.6.0,<3
+pydantic-settings>=2.1.0,<3
 
-# Supabase: use >=2.10 so gotrue works with httpx 0.26+ (no "proxy" init error)
+# Supabase
 supabase>=2.10.0
 
 # OpenAI (optional; use Gemini free tier if quota exceeded)
-openai==1.12.0
+openai>=1.12.0
 
-# Google Gemini - free tier, no credit card required (https://aistudio.google.com/apikey)
+# Google Gemini - free tier (https://aistudio.google.com/apikey)
 google-generativeai>=0.8.0
 
-# Local embedding fallback when OpenAI quota is exceeded
+# Local embedding fallback
 fastembed>=0.3.0
 
 # YouTube transcript (primary + fallback)
-youtube-transcript-api==0.6.2
+youtube-transcript-api>=0.6.2
 yt-dlp>=2024.1.1
 
 # PDF processing
-pypdf==4.0.1
-# pymupdf==1.24.2
+pypdf>=4.0.0
 
-# httpx: 0.26–0.27 only (gotrue uses proxy=; AsyncClient uses proxies=; 0.28+ breaks)
-httpx>=0.26.0,<0.28
-python-dotenv==1.0.1
-pydantic==2.6.1
-pydantic-settings==2.1.0
+# HTTP: compatible with supabase gotrue and openai
+httpx>=0.26.0,<0.28.0
 
-# Logging
-structlog==24.1.0
+# Env and logging
+python-dotenv>=1.0.0
+structlog>=24.1.0
 
-# websockets: 13+ for websockets.asyncio; <16 for realtime (Supabase)
+# Websockets: 13+ for asyncio; <16 for Supabase realtime
 websockets>=13.0,<16
