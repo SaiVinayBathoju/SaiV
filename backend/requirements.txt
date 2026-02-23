@@ -1,0 +1,36 @@
+# SaiV Backend - Production Dependencies
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+python-multipart==0.0.9
+
+# Supabase: use >=2.10 so gotrue works with httpx 0.26+ (no "proxy" init error)
+supabase>=2.10.0
+
+# OpenAI (optional; use Gemini free tier if quota exceeded)
+openai==1.12.0
+
+# Google Gemini - free tier, no credit card required (https://aistudio.google.com/apikey)
+google-generativeai>=0.8.0
+
+# Local embedding fallback when OpenAI quota is exceeded
+fastembed>=0.3.0
+
+# YouTube transcript (primary + fallback)
+youtube-transcript-api==0.6.2
+yt-dlp>=2024.1.1
+
+# PDF processing
+pypdf==4.0.1
+# pymupdf==1.24.2
+
+# httpx: 0.26–0.27 only (gotrue uses proxy=; AsyncClient uses proxies=; 0.28+ breaks)
+httpx>=0.26.0,<0.28
+python-dotenv==1.0.1
+pydantic==2.6.1
+pydantic-settings==2.1.0
+
+# Logging
+structlog==24.1.0
+
+# websockets: 13+ for websockets.asyncio; <16 for realtime (Supabase)
+websockets>=13.0,<16
