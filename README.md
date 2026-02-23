@@ -2,6 +2,8 @@
 
 SaiV is an AI-powered learning assistant that turns YouTube videos and PDFs into flashcards, quizzes, and a context-aware chat. It uses **Retrieval-Augmented Generation (RAG)** to provide grounded, accurate answers from your learning material.
 
+> **For evaluators:** See **[EVALUATION.md](EVALUATION.md)** for documentation aligned to the evaluation criteria (Architecture, AI Integration, RAG, Flashcards & Quiz, UI/UX, Error Handling, Documentation).
+
 ## Features
 
 - **Content Processing**: Paste a YouTube URL or upload a PDF
@@ -17,7 +19,7 @@ SaiV is an AI-powered learning assistant that turns YouTube videos and PDFs into
 | Frontend | Next.js 14 (App Router), TailwindCSS, TypeScript |
 | Backend | FastAPI (Python), async |
 | Database | Supabase (PostgreSQL + pgvector) |
-| AI | OpenAI GPT-4, text-embedding-3-small |
+| AI | OpenAI (GPT-4o-mini, text-embedding-3-small) and/or Google Gemini (gemini-2.5-flash, gemini-embedding-001) |
 
 ## Architecture
 
@@ -30,8 +32,8 @@ SaiV is an AI-powered learning assistant that turns YouTube videos and PDFs into
                                  │
                                  ▼
                         ┌──────────────────┐
-                        │   OpenAI API     │
-                        │   (GPT + Embed)  │
+                        │ OpenAI / Gemini  │
+                        │ (LLM + Embed)    │
                         └──────────────────┘
 ```
 
