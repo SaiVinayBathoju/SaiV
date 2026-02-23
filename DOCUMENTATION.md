@@ -17,7 +17,7 @@ This document supports project evaluation by describing how SaiV meets each crit
 
 ---
 
-## 1. Architecture & Code Structure (Weight: 20)
+## 1. Architecture & Code Structure 
 
 ### High-level layout
 
@@ -59,7 +59,7 @@ This document supports project evaluation by describing how SaiV meets each crit
 
 ---
 
-## 2. AI Integration Quality (Weight: 20)
+## 2. AI Integration Quality 
 
 ### Provider model
 
@@ -91,7 +91,7 @@ This document supports project evaluation by describing how SaiV meets each crit
 
 ---
 
-## 3. RAG Implementation (Weight: 20)
+## 3. RAG Implementation 
 
 ### Document ingestion
 
@@ -125,7 +125,7 @@ This document supports project evaluation by describing how SaiV meets each crit
 
 ---
 
-## 4. Flashcard & Quiz Logic (Weight: 15)
+## 4. Flashcard & Quiz Logic 
 
 ### Flashcard generation
 
@@ -152,7 +152,7 @@ This document supports project evaluation by describing how SaiV meets each crit
 
 ---
 
-## 5. UI/UX & Responsiveness (Weight: 10)
+## 5. UI/UX & Responsiveness 
 
 ### Pages and components
 
@@ -181,7 +181,7 @@ This document supports project evaluation by describing how SaiV meets each crit
 
 ---
 
-## 6. Error Handling (Weight: 10)
+## 6. Error Handling 
 
 ### API error responses
 
@@ -211,13 +211,6 @@ This document supports project evaluation by describing how SaiV meets each crit
 
 ---
 
-## 7. Documentation (Weight: 5)
 
-- **README.md**: Project overview, features, tech stack, architecture diagram, RAG pipeline summary, setup (DB, backend, frontend), environment variables, API endpoints, project structure, Vercel/Render deployment, error-handling summary, license.
-- **EVALUATION.md** (this file): Evaluation-oriented description aligned to the seven criteria (Architecture & Code Structure, AI Integration Quality, RAG Implementation, Flashcard & Quiz Logic, UI/UX & Responsiveness, Error Handling, Documentation).
-- **database/schema.sql**: Commented schema and RPC for pgvector and `match_document_chunks`.
-- **Inline comments**: Key modules (e.g. `embeddings.py`, `rag_service.py`, `chunking.py`) include brief comments for flow and configuration.
-
----
 
 
